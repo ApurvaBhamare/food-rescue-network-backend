@@ -44,7 +44,10 @@ export const getAvailableFood = async () => {
   return foodList;
 };
 
-export const claimFood = async (foodId: number, ngoId: number) => {
+export const claimFood = async (
+  foodId: number,
+  ngoId: number
+) => {
   const [updatedRows] = await Food.update(
     {
       status: "CLAIMED",
@@ -54,6 +57,12 @@ export const claimFood = async (foodId: number, ngoId: number) => {
       where: {
         id: foodId,
         status: "AVAILABLE",
+        expiry_time: {
+          [Op.gt]: new Date(),
+        },
+        hotel_id: {
+          [Op.ne]: ngoId,
+        },
       },
     }
   );
@@ -64,7 +73,6 @@ export const claimFood = async (foodId: number, ngoId: number) => {
 
   return await Food.findByPk(foodId);
 };
-                   
 export const pickupFood = async (
   foodId: number,
   ngoId: number

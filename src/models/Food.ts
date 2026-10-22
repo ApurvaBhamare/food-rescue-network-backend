@@ -12,13 +12,31 @@ export const Food = sequelize.define("Food", {
     allowNull: false,
   },
   food_name: {
-    type: DataTypes.STRING(150),
-    allowNull: false,
+  type: DataTypes.STRING(150),
+  allowNull: false,
+  validate: {
+    notEmpty: {
+      msg: "Food name is required",
+    },
+    len: {
+      args: [2, 150],
+      msg: "Food name must be between 2 and 150 characters",
+    },
   },
+},
   quantity: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
+  type: DataTypes.INTEGER,
+  allowNull: false,
+  validate: {
+    min: {
+      args: [1],
+      msg: "Quantity must be at least 1",
+    },
+    isInt: {
+      msg: "Quantity must be a whole number",
+    },
   },
+},
   description: {
     type: DataTypes.TEXT,
     allowNull: true,

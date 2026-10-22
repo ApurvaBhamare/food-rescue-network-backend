@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { addFood,getFoodList,getAvailableFoodList,claimFoodController,pickupFoodController,
   getMyClaimedFoodController,getMyAddedFoodController  } from "../controllers/foodController.js";
-import { authenticate } from "../middleware/authMiddleware.js";
+import { authenticate,authorize } from "../middleware/authMiddleware.js";
 
 export default async function foodRoutes(app: FastifyInstance) {
  app.post<{
@@ -39,19 +39,21 @@ app.patch<{ Params: { id: string } }>(
 );
 
 app.get(
-  "/my-claimed",
-  {
-    preHandler: authenticate,
-  },
-  getMyClaimedFoodController
-);
-
+    "/my-claimed",
+    {
+      preHandler: authenticate,
+    },
+    getMyClaimedFoodController
+  );
 app.get(
-  "/my-added",
-  {
-    preHandler: authenticate,
-  },
-  getMyAddedFoodController
-);
+    "/my-added",
+    {
+      preHandler: [
+        authenticate,
+        authorize("HOTEL"),
+      ],
+    },
+    getMyAddedFoodController
+  );
 }
 
