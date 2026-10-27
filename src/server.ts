@@ -16,8 +16,12 @@ const app = Fastify({
 });
 
 // Enable CORS
+
+// Enable CORS
 app.register(cors, {
   origin: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 });
 
 // Register user routes
