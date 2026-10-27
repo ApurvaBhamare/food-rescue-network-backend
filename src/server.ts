@@ -24,6 +24,8 @@ app.register(cors, {
 app.register(userRoutes, {
   prefix: "/api/users",
 });
+
+// Register food routes
 app.register(foodRoutes, {
   prefix: "/api/food",
 });
@@ -49,17 +51,19 @@ const startServer = async () => {
   try {
     await connectDatabase();
 
-    // Create the Users table if it does not exist
-    await sequelize.sync({ alter: true });
+    // Create tables if they do not exist
+    await sequelize.sync();
 
     console.log("Database tables synchronized successfully!");
 
+    const port = Number(process.env.PORT || 3000);
+
     await app.listen({
-      port: 3000,
+      port,
       host: "0.0.0.0",
     });
 
-    console.log("Server running on port 3000");
+    console.log(`Server running on port ${port}`);
   } catch (error) {
     app.log.error(error);
     process.exit(1);
