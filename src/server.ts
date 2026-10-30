@@ -62,6 +62,12 @@ const startServer = async () => {
 
     const port = Number(process.env.PORT || 3000);
 
+await app.ready();
+
+console.log("Registered Routes:");
+console.log(app.printRoutes());
+
+
     await app.listen({
       port,
       host: "0.0.0.0",

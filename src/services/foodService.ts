@@ -115,3 +115,54 @@ export const getMyAddedFood = async (hotelId: number) => {
 
   return foodList;
 };
+
+
+interface UpdateFoodData {
+  food_name: string;
+  quantity: number;
+ description?: string | undefined;
+  expiry_time: Date;
+}
+
+export const updateFood = async (
+  foodId: number,
+  hotelId: number,
+  data: UpdateFoodData
+) => {
+  const [updatedRows] = await Food.update(
+    {
+      food_name: data.food_name,
+      quantity: data.quantity,
+      description: data.description,
+      expiry_time: data.expiry_time,
+    },
+    {
+      where: {
+        id: foodId,
+        hotel_id: hotelId,
+        status: "AVAILABLE",
+      },
+    }
+  );
+
+  if (updatedRows === 0) {
+    return null;
+  }
+
+  return await Food.findByPk(foodId);
+};
+
+export const deleteFood = async (
+  foodId: number,
+  hotelId: number
+) => {
+  const deletedRows = await Food.destroy({
+    where: {
+      id: foodId,
+      hotel_id: hotelId,
+      status: "AVAILABLE",
+    },
+  });
+
+  return deletedRows > 0;
+};

@@ -7,6 +7,7 @@ import {
   pickupFood,
   getMyClaimedFood,
   getMyAddedFood,
+  updateFood,deleteFood
 } from "../services/foodService.js";
 
 
@@ -298,6 +299,143 @@ export const getMyAddedFoodController = async (
     return reply.code(500).send({
       success: false,
       message: "Unable to fetch added food",
+    });
+  }
+
+};
+
+
+interface UpdateFoodBody {
+  food_name: string;
+  quantity: number;
+  description?: string;
+  expiry_time: string;
+}
+
+export const updateFoodController = async (
+  request: FastifyRequest<{
+    Params: { id: string };
+    Body: UpdateFoodBody;
+  }>,
+  reply: FastifyReply
+) => {
+  try {
+    const user = request.user;
+
+    if (!user || user.role !== "HOTEL") {
+      return reply.code(403).send({
+        success: false,
+        message: "Only HOTEL users can edit food",
+      });
+    }
+
+    const foodId = Number(request.params.id);
+    const { food_name, quantity, description, expiry_time } =
+      request.body;
+
+    if (
+      !Number.isInteger(foodId) ||
+      foodId <= 0 ||
+      typeof food_name !== "string" ||
+      !food_name.trim() ||
+      !Number.isInteger(quantity) ||
+      quantity <= 0 ||
+      typeof expiry_time !== "string" ||
+      !expiry_time.trim() ||
+      (description !== undefined &&
+        typeof description !== "string")
+    ) {
+      return reply.code(400).send({
+        success: false,
+        message: "Please provide valid food details",
+      });
+    }
+
+    const expiryDate = new Date(expiry_time);
+
+    if (
+      !Number.isFinite(expiryDate.getTime()) ||
+      expiryDate.getTime() <= Date.now()
+    ) {
+      return reply.code(400).send({
+        success: false,
+        message: "Expiry time must be a valid future date",
+      });
+    }
+
+    const food = await updateFood(foodId, user.id, {
+      food_name: food_name.trim(),
+      quantity,
+      description,
+      expiry_time: expiryDate,
+    });
+
+    if (!food) {
+      return reply.code(404).send({
+        success: false,
+        message: "Food not found or cannot be edited",
+      });
+    }
+
+    return reply.code(200).send({
+      success: true,
+      message: "Food updated successfully",
+      food,
+    });
+  } catch (error) {
+    request.log.error(error);
+
+    return reply.code(500).send({
+      success: false,
+      message: "Unable to update food",
+    });
+  }
+};
+
+export const deleteFoodController = async (
+  request: FastifyRequest<{
+    Params: { id: string };
+  }>,
+  reply: FastifyReply
+) => {
+  try {
+    const user = request.user;
+
+    if (!user || user.role !== "HOTEL") {
+      return reply.code(403).send({
+        success: false,
+        message: "Only HOTEL users can delete food",
+      });
+    }
+
+    const foodId = Number(request.params.id);
+
+    if (!Number.isInteger(foodId) || foodId <= 0) {
+      return reply.code(400).send({
+        success: false,
+        message: "Invalid food ID",
+      });
+    }
+
+    const deleted = await deleteFood(foodId, user.id);
+
+    if (!deleted) {
+      return reply.code(404).send({
+        success: false,
+        message: "Food not found or cannot be deleted",
+      });
+    }
+
+    return reply.code(200).send({
+      success: true,
+      message: "Food deleted successfully",
+    });
+  } catch (error) {
+    request.log.error(error);
+
+    return reply.code(500).send({
+      success: false,
+      message: "Unable to delete food",
     });
   }
 };
